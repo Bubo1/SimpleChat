@@ -101,7 +101,10 @@ SimpleChat е чет апликација имплементирана со TCP 
 Ако добиеме нов пакет, за да го претвориме во објект од класата Packet го користиме конструктурот од класата Packet кој како аргумент прима низа од бајти.
 
 ## 4. Слики од апликацијата
-
+![alt tag](https://raw.githubusercontent.com/Bubo1/SimpleChat/master/ChatApplication/images/prva.png))
+![alt tag](https://raw.githubusercontent.com/Bubo1/SimpleChat/master/ChatApplication/images/setnick.png))
+![alt tag](https://raw.githubusercontent.com/Bubo1/SimpleChat/master/ChatApplication/images/createroom.png))
+![alt tag](https://raw.githubusercontent.com/Bubo1/SimpleChat/master/ChatApplication/images/useraction.png))
 
 ## 5. Упатство за тестирање
 
