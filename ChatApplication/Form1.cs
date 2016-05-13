@@ -68,7 +68,8 @@ namespace ChatApplication
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Load Error: " + ex.Message + " \n" + ex.StackTrace, "UDP Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show("Load Error: " + ex.Message + " \n" + ex.StackTrace, "UDP Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Debug.WriteLine(ex.StackTrace + " " + ex.Message);
             }
            
         }
@@ -342,7 +343,8 @@ namespace ChatApplication
             }
             catch (Exception ex)
             {
-                MessageBox.Show("ReceiveData Error: " + ex.Message + " \n" + ex.StackTrace, "TCP Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                //MessageBox.Show("ReceiveData Error: " + ex.Message + " \n" + ex.StackTrace, "TCP Server", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Debug.WriteLine(ex.StackTrace + " " + ex.Message);
             }
         }
 
