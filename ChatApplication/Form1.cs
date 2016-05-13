@@ -190,7 +190,7 @@ namespace ChatApplication
                                 sendData.packetType = PacketType.Joined;
                                 sendData.room = receivedData.room;
                                 sendData.users = this.rooms.First(x => x.name == receivedData.room.name).users.Select(i => i.ToString()).ToList();
-                                sendData.user = this.user;
+                                sendData.user = receivedData.user;
                                 room = this.rooms.First(x => x.name == receivedData.room.name);
                                 sendData.room.topic = room.topic;
                                 receivedData.user.socket = socket;
@@ -221,9 +221,10 @@ namespace ChatApplication
                             room.users.Add(new User(nickname));
                         }
                         room.users.Add(this.user);
-                        if (receivedData.user.nickname == this.user.nickname)
+                        if (!this.rooms.Exists(x => x.name == room.name))
                         {
                             this.Invoke(new AddRoomDelegate(this.AddRoom), new object[] { room });
+
                         }
                         else
                         {
@@ -237,7 +238,7 @@ namespace ChatApplication
                         room = this.rooms.First(x => x.name == receivedData.room.name);
                         if (room.owner.socket == null)
                         {
-                            broadcastMessages(this.rooms.First(x => x.name == receivedData.room.name), receivedData.message, user);
+                            broadcastMessages(this.rooms.First(x => x.name == receivedData.room.name), receivedData.message, receivedData.user);
                             this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { room, receivedData.message });
                         }
                         else
@@ -264,6 +265,7 @@ namespace ChatApplication
                         }
 
                         this.Invoke(new RemoveUserFromRoomDelegate(this.RemoveUser), new object[] { receivedData.room, receivedData.user });
+                        this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message("has parted the room.", new User("STATUS")) });
                         break;
 
                     case PacketType.Parted: // User parted room
@@ -292,9 +294,9 @@ namespace ChatApplication
                         {
                             this.Invoke(new RemoveUserFromRoomDelegate(this.RemoveUser), new object[] { receivedData.room, receivedData.user });
                             if (receivedData.packetType == PacketType.Kicked)
-                                this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message("{0} has been kicked from room.", new User("STATUS")) });
+                                this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message("has been kicked from room.", new User("STATUS")) });
                             else
-                                this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message("{0} has been banned from room.", new User("STATUS")) });
+                                this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message("has been banned from room.", new User("STATUS")) });
                         }
                         break;
 
@@ -321,6 +323,7 @@ namespace ChatApplication
                             else // Change nick
                             {
                                 this.Invoke(new ChangeNicknameDelegate(this.ChangeNickname), new object[] { receivedData.user, receivedData.newNickname, r });
+                                this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { receivedData.room, new Message(String.Format("has changed nickname to {0}.", receivedData.newNickname), receivedData.user) });
                             }
                         }
                         break;
@@ -331,7 +334,7 @@ namespace ChatApplication
                         break;
                 }
 
-                this.dataStream = new byte[1024];
+                this.dataStream = new byte[2048];
 
                 Debug.WriteLine(sendData);
 
@@ -410,7 +413,7 @@ namespace ChatApplication
             byte[] data = sendData.GetDataStream();
             foreach (var u in room.users) // Send message to room users
             {
-                if (u.socket == null || u.nickname == fromUser.nickname)  // Don't send to self or back to user
+                if (u.socket == null)  // Don't send to self or back to user
                 {
                     continue;
                 }
@@ -469,6 +472,8 @@ namespace ChatApplication
         {
             if (txtMessage.Text.Trim().Length != 0)
             {
+
+                txtMessage.Text = txtMessage.Text.Replace(';', ':');
                 Room room = this.rooms.ElementAt(lbRooms.SelectedIndex);
                 if (room.owner.socket == null)
                 {
@@ -491,7 +496,6 @@ namespace ChatApplication
 
                     sendData.room.owner.socket.BeginSend(data, 0, data.Length, SocketFlags.None, new AsyncCallback(SendCallback), sendData.room.owner.socket);
 
-                    this.Invoke(new AddMessageToRoomDelegate(this.AddMessageToRoom), new object[] { room, sendData.message });
                 }
                 txtMessage.Text = null;
             }
